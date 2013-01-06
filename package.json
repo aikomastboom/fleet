@@ -37,7 +37,7 @@
         "test" : "tap test/*.js"
     },
     "dependencies" : {
-        "propagit" : "git://github.com/aikomastboom/propagit.git",
+        "propagit" : "http://github.com/aikomastboom/propagit/archive/0.7.0.tar.gz",
         "optimist" : "~0.3.1",
         "mkdirp" : "~0.3.0",
         "archy" : "~0.0.2"
