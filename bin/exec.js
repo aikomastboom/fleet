@@ -42,37 +42,42 @@ p.hub(function (hub) {
 
 function spawn (hub, opts) {
     var em = new EventEmitter;
+    var procs = {}
+    var waiting = 1;
     hub.subscribe(em.emit.bind(em));
     em.on('ready', function () {
-        hub.spawn(opts, function (err, procs) {
+
+        hub.execute(opts, function (err, result) {
             if (err) {
                 console.error(err)
                 p.hub.close();
                 return;
             }
-            
-            em.on('stdout', function (buf, proc) {
-                if (procs[proc.drone] !== proc.id) return;
-                console.log(
-                    '[' + proc.drone + '#' + proc.id + '] '
-                    + buf.replace(/\n$/, '')
-                );
-            });
-            em.on('stderr', function (buf, proc) {
-                if (procs[proc.drone] !== proc.id) return;
-                console.log(
-                    '[' + proc.drone + '#' + proc.id + '] '
-                    + buf.replace(/\n$/, '')
-                );
-            });
-            
+            procs[result.id] = result.pid;
+            waiting = result.pending;
+        });
+
+        em.on('stdout', function (buf, proc) {
+            if (procs[proc.drone] !== proc.id) return;
+            console.log(
+                '[' + proc.drone + '#' + proc.id + '] '
+                + buf.replace(/\n$/, '')
+            );
+        });
+        em.on('stderr', function (buf, proc) {
+            if (procs[proc.drone] !== proc.id) return;
+            console.log(
+                '[' + proc.drone + '#' + proc.id + '] '
+                + buf.replace(/\n$/, '')
+            );
+        });
+
+        em.on('exit', function (code, sig, proc) {
+            if (procs[proc.drone] !== proc.id) return;
+            console.log('(' + proc.drone + '#' + proc.id + ' exited)');
+            delete procs[proc.drone];
             var pending = Object.keys(procs).length;
-            em.on('exit', function (code, sig, proc) {
-                if (procs[proc.drone] !== proc.id) return;
-                console.log('(' + proc.drone + '#' + proc.id + ' exited)');
-                
-                if (--pending === 0) p.hub.close();
-            });
+            if (waiting === 0 && pending === 0) p.hub.close();
         });
     });
 }
