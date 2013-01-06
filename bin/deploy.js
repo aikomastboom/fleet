@@ -13,7 +13,8 @@ p.on('error', function (err) {
 p.hub(function (hub) {
     var opts = {
         repo : argv.repo || git.repoName(),
-        commit : argv.commit
+        commit : argv.commit,
+		branch : argv.branch
     };
     if (!opts.repo) {
         console.error('specify --repo or navigate to a git repo');
@@ -51,24 +52,27 @@ function deploy (hub, opts) {
         return 'http://' + auth + uri + '/' + r;
     })();
     
-    git.push(ref, function (err) {
+    git.push(ref, function (err, branch) {
         if (err) {
             console.error(err);
             p.hub.close();
         }
-        else hub.deploy(opts, function (errors) {
-            if (errors) {
-                errors.forEach(function (err) {
-                    console.error(
-                        '[' + err.drone + '] '
-                        + (err.code === 128 ? 'already at latest' : err)
-                    );
-                });
-            }
-            else {
-                console.log('deployed ' + opts.repo + '/' + opts.commit);
-            }
-            p.hub.close();
-        });
+        else {
+			if (!opts.branch) opts.branch = branch;
+			hub.deploy(opts, function (errors) {
+				if (errors) {
+					errors.forEach(function (err) {
+						console.error(
+							'[' + err.drone + '] '
+								+ (err.code === 128 ? 'already at latest' : err)
+						);
+					});
+				}
+				else {
+					console.log('deployed ' + opts.repo + '/' + opts.commit);
+				}
+				p.hub.close();
+			});
+		}
     });
 }
