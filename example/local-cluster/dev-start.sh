@@ -1,6 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-secret='beepboop'
+current_dir=$(cd $(dirname $0) && pwd)
+secret='vier'
 tmpdir=/tmp/$(node -e '(Math.random()*Math.pow(2,32)).toString(16)' -p)
 
 on_die()
@@ -19,14 +20,14 @@ mkdir -p $tmpdir/drone0
 mkdir -p $tmpdir/drone1
 
 cd $tmpdir/hub
-fleet hub --secret="$secret" --port=7000 >/dev/null &
+${current_dir}/../../bin/hub.js --secret="$secret" --port=7000 &
 
 echo hub listening on :7000
 
 cd $tmpdir/drone0
-fleet drone --secret="$secret" --hub=localhost:7000 >/dev/null &
+${current_dir}/../../bin/drone.js --secret="$secret" --hub=localhost:7000 &
 
 cd $tmpdir/drone1
-fleet drone --secret="$secret" --hub=localhost:7000 >/dev/null &
+${current_dir}/../../bin/drone.js --secret="$secret" --hub=localhost:7000 &
 
-fleet monitor --secret="$secret" --hub=localhost:7000
+${current_dir}/../../bin/monitor.js --secret="$secret" --hub=localhost:7000
