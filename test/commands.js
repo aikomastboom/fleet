@@ -34,7 +34,7 @@ test('fleet drone', function (t) {
         procs.drone.push(fleet('drone.js', args, { cwd: cwd }))
         procs.drone[procs.drone.length-1]
             .stdout.on('data', function (data) {
-                t.ok(String(data).match(/hub/), 'drone should output connection information');
+                t.ok(/hub/.test(data), 'drone should output connection information');
             })
         ;
     });
@@ -51,6 +51,12 @@ test('git init, git add, git commit, fleet remote add, fleet deploy, fleet spawn
             ps.stderr.pipe(process.stderr, { end : false });
             ps.on('exit', this.ok);
         })
+		.seq(function () {
+			spawn('git', [ 'config', 'user.email', '"you@example.com"' ]).on('exit', this.ok);
+		})
+		.seq(function () {
+			spawn('git', [ 'config', 'user.name', '"Your Name"' ]).on('exit', this.ok);
+		})
         .seq(function () {
             fs.writeFile(dir.gitRepo + '/server.js', 'console.log("Hello World!")', this);
         })
@@ -82,7 +88,7 @@ test('git init, git add, git commit, fleet remote add, fleet deploy, fleet spawn
             var ps = fleet('spawn.js', args, { cwd: dir.gitRepo } );
             ps.stderr.pipe(process.stderr, { end : false });
             ps.stdout.on('data', function (data) {
-                t.ok(String(data).match(/spawned/), 'spawned should be matched in spawn');
+                t.ok(/spawned/.test(data), 'spawned should be matched in spawn');
             });
             ps.on('exit', function (code, signal) {
                 t.ok(true, 'fleet spawn node server.js');
@@ -94,20 +100,21 @@ test('git init, git add, git commit, fleet remote add, fleet deploy, fleet spawn
 });
 
 test('fleet ps', function (t) {
-    t.plan(4);
+    t.plan(3);
     var ps = fleet('ps.js', [], { cwd: dir.gitRepo } );
     ps.stderr.pipe(process.stderr, { end : false });
     ps.stdout.on('data', function (data) {
-        t.ok(String(data).match(/drone/), 'drone should be matched in ps');
+		t.ok(/drone/.test(data), 'drone should be matched in ps');
     });
-    ps.on('exit', function (code, signal) {
+    ps.once('exit', function (code, signal) {
         t.ok(true, 'fleet ps');
+		t.end();
     });
-})
+});
 
 test('fleet drone stop', function (t) {
     procs.drone.forEach(function (drone) {
-        t.ok(drone.pid, 'the drone should have a pid')
+        t.ok(drone.pid, 'the drone should have a pid');
         t.test('should each stop', function (t) {
             drone
                 .on('exit', function (code, signal) {
