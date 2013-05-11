@@ -1,7 +1,7 @@
 {
     "name" : "fleet",
     "description" : "command a cluster of processes ",
-    "version" : "0.1.8",
+    "version" : "0.1.9",
     "repository" : {
         "type" : "git",
         "url" : "git://github.com/aikomastboom/fleet.git"
@@ -37,13 +37,13 @@
         "test" : "tap test/*.js"
     },
     "dependencies" : {
-        "propagit" : "http://github.com/aikomastboom/propagit/archive/0.7.1.tar.gz",
-        "optimist" : "~0.3.1",
-        "mkdirp" : "~0.3.0",
+        "propagit" : "http://github.com/aikomastboom/propagit/archive/0.7.2.tar.gz",
+        "optimist" : "~0.4.0",
+        "mkdirp" : "~0.3.5",
         "archy" : "~0.0.2"
     },
     "devDependencies" : {
-        "tap" : "~0.2.4",
+        "tap" : "~0.4.2",
         "seq" : "~0.3.5",
         "ronn" : "~0.3.8"
     },
