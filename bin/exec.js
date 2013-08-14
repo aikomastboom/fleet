@@ -42,14 +42,14 @@ p.hub(function (hub) {
 
 function spawn (hub, opts) {
     var em = new EventEmitter;
-    var procs = {}
+    var procs = {};
     var waiting = 1;
     hub.subscribe(em.emit.bind(em));
     em.on('ready', function () {
 
         hub.execute(opts, function (err, result) {
             if (err) {
-                console.error(err)
+                console.error(err);
                 p.hub.close();
                 return;
             }
@@ -74,7 +74,7 @@ function spawn (hub, opts) {
 
         em.on('exit', function (code, sig, proc) {
             if (procs[proc.drone] !== proc.id) return;
-            console.log('(' + proc.drone + '#' + proc.id + ' exited)');
+            console.log('(' + proc.drone + '#' + proc.id + ' exited with code ' + code + ')');
             delete procs[proc.drone];
             var pending = Object.keys(procs).length;
             if (waiting === 0 && pending === 0) p.hub.close();
